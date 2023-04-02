@@ -5,7 +5,7 @@ A python class for editing decrypted save files for the PS4 version of Shantae: 
 ## Using Apollo Save Tool ##
 
 
-![Screenshot_2023-04-02_15-54-58](https://cdn.discordapp.com/attachments/319224795785068545/1092101035364991086/SPOILER_dont_watch.mp4)
+![Screenshot_2023-04-02_15-54-58](https://cdn.discordapp.com/attachments/319224795785068545/1092101697851101214/dont_watch.mp4)
 
 # Class Usage #
 ## Initialise savedata.sav file for editing ##
