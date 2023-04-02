@@ -12,6 +12,12 @@ with open('savedata.sav','rb') as f:
 # Print out a mockup of the File Select! menu
 print(save)
 ```
+# Editing and reading stuff from save
+```python
+# Print out the gems amount for File A
+print(save.get_gems(1)) # The number means which save it is (1 is File A, 2 is File B and 3 is File c)
+
+```
 
 # Write the save back to the file
 ```python
