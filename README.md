@@ -13,9 +13,11 @@ with open('savedata.sav','rb') as f:
 print(save)
 ```
 # Editing and reading stuff from save
+In the get and set functions, the last agrument will always be savenumber, this is how you access indidvdual save files
+1 is File A, 2 is File B and 3 is File c
 ```python
 # Print out the gems amount for File A
-print(save.get_gems(1)) # The number means which save it is (1 is File A, 2 is File B and 3 is File c)
+print(save.get_gems(1))
 
 ```
 
