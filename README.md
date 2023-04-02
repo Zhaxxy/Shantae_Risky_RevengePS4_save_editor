@@ -5,8 +5,13 @@ A python class for editing decrypted save files for the PS4 version of Shantae: 
 ## Using Apollo Save Tool ##
 https://youtu.be/91V9F9QXsec
 
+
 # Class Usage #
 ## Initialise savedata.sav file for editing ##
+```
+git clone https://github.com/Zhaxxy/Shantae_Risky_RevengePS4_save_editor.git
+```
+
 ```python
 from Shantae_Risky_RevengePS4_save_editor import RiskyRevengeSav as sav
 
