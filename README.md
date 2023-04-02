@@ -12,7 +12,7 @@ with open('savedata.sav','rb') as f:
 # Print out a mockup of the File Select! menu
 print(save)
 ```
-## Editing and reading stuff from save ##
+## Editing and Reading Stuff from Save ##
 In the get and set functions, the last argument will always be savenumber, this is how you access individual save files<br />
 <br />
 1 is File A, 2 is File B and 3 is File c
@@ -55,7 +55,7 @@ save.set_hearts(7,2)
 # Will raise ValueError
 save.set_current_magic(999,2)
 ```
-### "Deleting" and "Making" Save files ###
+### "Deleting" and "Making" Save Files ###
 The game has 2 checks to see if save is in use or not<br />
 The save time is bigger then 0 (at least 1 so 1 frame) and a boolean if the save is in use or not
 <br />
@@ -85,7 +85,10 @@ save.set_save_file_time(1,2)
 # Print out current magic (shown as a bar ingame but it stored as a 1 byte uint)
 print(save.get_current_magic(2)) # 50 since the save using theese methods aren't effected 
 ```
-## Write the save back to the file ##
+
+### Cool Stuff ###
+sdf
+## Write the Save Back to The File ##
 ```python
 with open('savedata.sav','wb') as f:
   f.write(save.export_save())
