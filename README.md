@@ -2,7 +2,8 @@
 A python class for editing decrypted save files for the PS4 version of Shantae: Risky's Revenge - Director's Cut
 
 # Decrypting and Encrypting Save (savedata.sav) #
-sex
+## Using Apollo Save Tool ##
+<iframe width="560" height="315" src="https://www.youtube.com/embed/91V9F9QXsec" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 # Class Usage #
 ## Initialise savedata.sav file for editing ##
