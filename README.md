@@ -30,7 +30,7 @@ print('I have a puppy in my inventory in File C is', save.get_has_puppy(3))
 if a value is specific to a save file, the function to get the value would have set_ prefixed to it<br />
 You'll put whatever value as the first argument, then the savenumber as the second argument<br />
 <br />
-If you try to enter a bad value, it will raise an error, look at varibles around line 60 and downwards to figure out what bad values are (like setting current_health to 999 wil raise error since its larger then 255) currentlly theres only unints and bools values. If you think would be better to change the values to the closest valid value automatically instead, let me know and I'll do that instead
+If you try to enter a bad value, it will raise an error, look at varibles around line 60 and downwards to figure out what bad values are (like setting current_health to 999 wil raise error since its larger then 255) currentlly theres only uints and bools values. If you think would be better to change the values to the closest valid value automatically instead, let me know and I'll do that instead
 <br />
 <br />
 (Some things may require 2 things to be set, usually there will be function with has_ prefixed to it and a function with _count subfixed to it)
