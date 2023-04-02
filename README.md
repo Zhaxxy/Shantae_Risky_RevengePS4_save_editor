@@ -53,6 +53,9 @@ save.set_current_magic(999,2)
 ### "Deleting" and "Making" Save files ###
 The game has 2 checks to see if save is in use or not<br />
 The save time is bigger then 0 (at least 1 so 1 frame) and a boolean if the save is in use or not
+<br />
+<br />
+So in order to "delete" a save, you can either set_save_file_time to 0 or set_is_used1 to False (ingame the values reset when you click new)<br />
 ## Write the save back to the file ##
 ```python
 with open('savedata.sav','wb') as f:
