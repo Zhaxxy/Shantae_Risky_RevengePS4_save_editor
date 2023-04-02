@@ -16,10 +16,15 @@ print(save)
 In the get and set functions, the last argument will always be savenumber, this is how you access individual save files<br />
 <br />
 1 is File A, 2 is File B and 3 is File c
+
 ## Getting Values ##
+if a value is specific to a save file, the function to get the value would have get_ prefixed to it
 ```python
 # Print out the gems amount for File A
 print(save.get_gems(1))
+
+# Print out if you have the puppy (Wobble bell) in File C
+print('I have a puppy in my inventory in File C is', save.get_has_puppy(3))
 ```
 ## Editing Values ##
 
