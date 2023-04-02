@@ -50,7 +50,7 @@ save.set_hearts(7,2)
 # Will raise ValueError
 save.set_current_magic(999,2)
 ```
-
+### "Deleting" and "Making" Save files ###
 
 ## Write the save back to the file ##
 ```python
