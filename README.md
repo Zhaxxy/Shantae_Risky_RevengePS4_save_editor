@@ -12,3 +12,9 @@ with open('savedata.sav','rb') as f:
 # Print out a mockup of the File Select! menu
 print(save)
 ```
+
+# Write the save back to the file
+```python
+with open('savedata.sav','wb') as f:
+  f.write(save.export_save())
+```
