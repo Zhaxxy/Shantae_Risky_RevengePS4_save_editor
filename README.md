@@ -41,8 +41,14 @@ save.set_has_magic_seal(True,2)
 # Makes the count of Magic Seals 1 for File B
 save.set_magic_potions_count(1,2)
 
-#Give you Sky's egg for File B
+# Give you Sky's egg for File B
 save.set_has_skys_egg(True,2)
+
+# Make you have 7 hearts for File B
+save.set_hearts(7,2)
+
+#Will raise ValueError
+save.set_current_magic(999,2)
 ```
 
 
