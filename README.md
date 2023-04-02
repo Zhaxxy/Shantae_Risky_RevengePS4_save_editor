@@ -38,7 +38,7 @@ You'll put whatever value as the first argument, then the savenumber as the seco
 If you try to enter a bad value, it will raise an error, look at varibles around line 60 and downwards to figure out what bad values are (like setting current_health to 999 wil raise error since its larger then 255) currentlly theres only uints and bools values. If you think would be better to change the values to the closest valid value automatically instead, let me know and I'll do that instead
 <br />
 <br />
-(Some things may require 2 things to be set, usually there will be function with has_ prefixed to it and a function with _count subfixed to it, i might make separate functions to do this automatically)
+Things you can have mutiple of usually require 2 things to be set, usually there will be function with has_ prefixed to it and a function with _count subfixed to it, i might make separate functions to do this automatically
 ```python
 # Put the Magic Seal in your inventory for File B (doesn't show up ingame if the count is 0)
 save.set_has_magic_seal(True,2)
