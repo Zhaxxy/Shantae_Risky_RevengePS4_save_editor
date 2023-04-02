@@ -16,10 +16,12 @@ print(save)
 In the get and set functions, the last argument will always be savenumber, this is how you access individual save files<br />
 <br />
 1 is File A, 2 is File B and 3 is File c
+## Getting Values ##
 ```python
 # Print out the gems amount for File A
 print(save.get_gems(1))
 ```
+## Editing Values ##
 
 
 # Write the save back to the file
