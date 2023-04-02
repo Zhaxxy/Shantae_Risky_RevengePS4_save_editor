@@ -75,12 +75,17 @@ save.set_is_used1(True,1)
 # Print gems amount
 print(save.get_gems(1)) # 786 (notice it stayed the same)
 
+# Print out current magic for File B (shown as a bar ingame but it stored as a 1 byte uint)
+print(save.get_current_magic(2)) # 100 since 100 is full and deafult value
+# Set it to 50
+save.set_current_magic(50,2)
+
 # "Make" "new" save in File B (It's already NEW)
 save.set_is_used1(True,2)
 save.set_save_file_time(1,2)
 
 # Print out current magic (shown as a bar ingame but it stored as a 1 byte uint)
-print(save.get_current_magic(2)) # 100 since 100 is full and deafult value
+print(save.get_current_magic(2)) # 50 since the save using theese methods aren't effected 
 ```
 ## Write the save back to the file ##
 ```python
