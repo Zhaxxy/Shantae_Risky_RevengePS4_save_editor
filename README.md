@@ -47,7 +47,7 @@ save.set_has_skys_egg(True,2)
 # Make you have 7 hearts for File B
 save.set_hearts(7,2)
 
-#Will raise ValueError
+# Will raise ValueError
 save.set_current_magic(999,2)
 ```
 
