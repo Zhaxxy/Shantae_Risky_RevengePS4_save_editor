@@ -51,7 +51,7 @@ save.set_hearts(7,2)
 save.set_current_magic(999,2)
 ```
 ### "Deleting" and "Making" Save files ###
-
+d
 ## Write the save back to the file ##
 ```python
 with open('savedata.sav','wb') as f:
