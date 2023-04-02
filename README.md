@@ -60,8 +60,9 @@ The game has 2 checks to see if save is in use or not<br />
 The save time is bigger then 0 (at least 1 so 1 frame) and a boolean if the save is in use or not
 <br />
 <br />
-So in order to "delete" a save, you can either set_save_file_time to 0 or set_is_used1 to False or both (ingame the save does reset when you press NEW)<br />
-And to "make" a save you set_save_file_time to something bigger then 0 and set_is_used1 to True<br />(this does not reset the save, so if you used the previous method to delete, the values will be there)
+So in order to "delete" a save, you can either set_save_file_time to 0 or set_is_used1 to False or both<br />
+And to "make" a save you set_save_file_time to something bigger then 0 and set_is_used1 to True<br />(this does not reset the save, so if you used the previous method to delete, the values will be there)<br />
+ingame the save does reset when you press NEW
 ```python
 # Print out the gems amount for File A
 print(save.get_gems(1)) # 786
