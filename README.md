@@ -10,6 +10,7 @@ https://youtu.be/91V9F9QXsec
 ## Initialise savedata.sav file for editing ##
 ```
 git clone https://github.com/Zhaxxy/Shantae_Risky_RevengePS4_save_editor.git
+pip install bitstring
 ```
 
 ```python
