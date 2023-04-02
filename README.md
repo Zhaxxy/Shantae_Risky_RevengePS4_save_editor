@@ -97,6 +97,7 @@ Most the time the ingame limits arent actually the limits (can lead to werid eff
 Giving yourself the puppy for example won't let you give it back to the chef<br />
 Setting your current health to 0 makes you god mode (can only die to falls), setting your hearts to 0 as well will make it stay as god mode even if pick up health<br /><br />
 Try things out and see whats happens!
+
 ## Write the Save Back to The File ##
 ```python
 with open('savedata.sav','wb') as f:
