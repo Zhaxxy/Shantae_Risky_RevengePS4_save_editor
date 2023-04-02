@@ -87,6 +87,12 @@ print(save.get_current_magic(2)) # 50 since the save using theese methods aren't
 ```
 
 ### Cool Stuff ###
+For the PS4 version at least, you cannot access the always running, its always set to true, however with this editor you can
+```python
+# Turn off always running for File C (have to run manually by holding circle)
+save.set_always_running(False,3)
+```
+<br />
 Most the time the ingame limits arent actually the limits (can lead to werid effects), and also doing things may not give you the desired effects<br />
 Giving yourself the puppy for example won't let you give it back to the chef<br />
 Setting your current health to 0 makes you god mode (can only die to falls), setting your hearts to 0 as well will make it stay as god mode even if pick up health<br /><br />
