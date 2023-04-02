@@ -51,7 +51,8 @@ save.set_hearts(7,2)
 save.set_current_magic(999,2)
 ```
 ### "Deleting" and "Making" Save files ###
-d
+The game has 2 checks to see if save is in use or not<br />
+The save time is bigger then 0 (at least 1 so 1 frame) and a boolean if the save is in use or not
 ## Write the save back to the file ##
 ```python
 with open('savedata.sav','wb') as f:
