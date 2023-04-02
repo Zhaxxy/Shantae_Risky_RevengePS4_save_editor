@@ -69,9 +69,6 @@ print(save.get_gems(1)) # 786
 # "Delete" File A
 save.set_is_used1(False,1)
 
-# "Make" "new" save in File A
-save.set_is_used1(True,1)
-
 # Print gems amount
 print(save.get_gems(1)) # 786 (notice it stayed the same)
 
