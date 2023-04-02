@@ -78,6 +78,9 @@ print(save.get_gems(1)) # 786 (notice it stayed the same)
 # "Make" "new" save in File B (It's already NEW)
 save.set_is_used1(True,2)
 save.set_save_file_time(1,2)
+
+# Print out current magic (shown as a bar ingame but it stored as a 1 byte uint)
+print(save.get_current_magic(2)) # 100 since 100 is full and deafult value
 ```
 ## Write the save back to the file ##
 ```python
