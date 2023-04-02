@@ -32,7 +32,7 @@ print(frames_spent)
 seconds = frames_spent // 60
 ```
 ### Editing Values ###
-if a value is specific to a save file, the function to get the value would have set_ prefixed to it<br />
+if a value is specific to a save file, the function to set the value would have set_ prefixed to it<br />
 You'll put whatever value as the first argument, then the savenumber as the second argument<br />
 <br />
 If you try to enter a bad value, it will raise an error, look at varibles around line 60 and downwards to figure out what bad values are (like setting current_health to 999 wil raise error since its larger then 255) currentlly theres only uints and bools values. If you think would be better to change the values to the closest valid value automatically instead, let me know and I'll do that instead
