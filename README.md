@@ -6,7 +6,7 @@ A python class for editing decrypted save files for the PS4 version of Shantae: 
 
 
 
-![Screenshot_2023-04-02_15-21-20](https://streamable.com/fymfc2)
+[![Watch the video](https://img.youtube.com/vi/T-D1KVIuvjA/maxresdefault.jpg)](https://youtu.be/T-D1KVIuvjA)
 
 # Class Usage #
 ## Initialise savedata.sav file for editing ##
