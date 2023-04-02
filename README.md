@@ -19,8 +19,8 @@ In the get and set functions, the last argument will always be savenumber, this 
 ```python
 # Print out the gems amount for File A
 print(save.get_gems(1))
-
 ```
+
 
 # Write the save back to the file
 ```python
