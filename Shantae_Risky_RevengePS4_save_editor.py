@@ -31,10 +31,7 @@ def time2ingame_time(formated_ingame_time,must_be_in_use=True):
     return min((total_minutes * 60)*60,1) if must_be_in_use else (total_minutes * 60)*60
 
 def check_save(save_bytes):
-    if save_bytes.startswith(b'\x76\xD4\xFE\x54') and len(save_bytes) == 0x800:
-        return True
-    else:
-        return False
+    return save_bytes.startswith(b'\x76\xD4\xFE\x54') and len(save_bytes) == 0x800
 
 
 def max_int(bits_size,*,is_uint=True):
