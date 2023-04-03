@@ -260,7 +260,7 @@ class RiskyRevengeSav:
         RiskyRevengeSav.  GEMS_AND_STUFF,
         savenumber,
         RiskyRevengeSav.  ALWAYS_RUNNING_BIT,
-        'uint')
+        'bool')
 
     def set_always_running(self,value,savenumber):
         RiskyRevengeSav._write_data(self,
@@ -268,7 +268,7 @@ class RiskyRevengeSav:
         savenumber,
         RiskyRevengeSav.  ALWAYS_RUNNING_BIT,
         value,
-        'uint')
+        'bool')
 
     def get_is_used1(self,savenumber):
         return RiskyRevengeSav._read_data(self,
