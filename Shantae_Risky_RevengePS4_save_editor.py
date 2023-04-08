@@ -6,10 +6,11 @@ if __name__ == "__main__":
 
 from io import BytesIO
 from bitstring import BitArray as ba
+import logging
 
 import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
 
-
+logging.basicConfig(level=logging.DEBUG)
 
 
 """
@@ -65,6 +66,9 @@ class RiskyRevengeSav:
                     *,
                     endianness='little'):
         
+        if data_type_is == 'bytes': logging.warning('You really should not be using the bytes data_type_is, so the order will not swap if little endian')
+        
+        
         if savenumber not in offsets_n_stuff.SAVE_FILES_SLOTS:
             raise ValueError(f'{savenumber} not a valid save file number')
         
@@ -73,23 +77,32 @@ class RiskyRevengeSav:
         new_data = self._savedata.read(offset_n_length[1])
         self._savedata.seek(0)
         
+        logging.debug(f'Orignal block is: {new_data.hex()}')
+        
         new_bitarray = ba(bytes=change_endianes(new_data,endianness))
+        logging.debug(f'We read the block as: {new_bitarray.tobytes().hex()}')
+
+
+        the_raw_bits = new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]]
+        logging.debug(f'Got the bits: {"0x"+the_raw_bits.tobytes().hex() if bit_offset_n_length[1] % 8 == 0 else the_raw_bits.bin}')
+
 
         ############# methods here
         if data_type_is.lower() == 'uint':
-            return new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]].uint
+            return the_raw_bits.uint
         elif data_type_is.lower() == 'int':
-            return new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]].int
+            return the_raw_bits.int
         elif data_type_is.lower() == 'bool':
-            return bool(new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]].int)
-
+            return bool(the_raw_bits.uint)
+        elif data_type_is.lower() == 'bytes':
+            return change_endianes(the_raw_bits.tobytes(),endianness)
 
 
         elif data_type_is.lower() == 'time': #DONT USE THIS METHOD, JUST MANUPLATE THE INT MANUALLY!
-            time_count = new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]].uint
-            return datetime.timedelta(seconds=time_count//60) #but i wanna manuplate the indivdual frames >:(
+            time_count = the_raw_bits.uint
+            return datetime.timedelta(seconds=time_count//60)
         else:
-            raise NotImplementedError(f'{data_type_is} date type is not supported')
+            raise NotImplementedError(f'{data_type_is} data type is not supported')
         ############# methods here        
         
     def _write_data(self,
@@ -101,13 +114,26 @@ class RiskyRevengeSav:
                     *,
                     endianness=offsets_n_stuff.GLOBAL_ENDIAN):
         
+        if data_type_is == 'bytes': logging.warning('You really should not be using the bytes data_type_is, so the order will not swap if little endian')
+        
         if savenumber not in offsets_n_stuff.SAVE_FILES_SLOTS:
             raise ValueError(f'{savenumber} not a valid save file number')
         
-        if max_int(bit_offset_n_length[1]) < value and data_type_is == 'uint':
-            raise ValueError(f'Value is bigger then {max_int(bit_offset_n_length[1])}, wont work')
-        if data_type_is == 'uint' and value < 0:
-            raise ValueError('uint values cannot be negative')
+
+        
+        if data_type_is == 'bytes':
+            required_bytes_length = bit_offset_n_length[1]//8
+            entered_bytes_length = len(value)
+            
+            if entered_bytes_length != entered_bytes_length:
+                raise ValueError(f'{value.hex()} is {entered_bytes_length} bytes, it must be {required_bytes_length} bytes')
+        
+        
+        if data_type_is == 'uint':
+            if max_int(bit_offset_n_length[1]) < value:
+                raise ValueError(f'Value is bigger then {max_int(bit_offset_n_length[1])}, wont work')
+            if value < 0:
+                raise ValueError('uint values cannot be negative')
         
         
         new_offset = (offset_n_length[0] - offset_n_length[1]) + (offset_n_length[1]*savenumber)
@@ -121,18 +147,21 @@ class RiskyRevengeSav:
         
 
         ############# methods here
-        if data_type_is.lower() == 'uint':
+        if data_type_is.lower() == 'bytes':
+            new_value = ba(bytes=change_endianes(value,endianness))
+        elif data_type_is.lower() == 'uint':
             new_value = ba(uint=value,length=bit_offset_n_length[1])
         elif data_type_is.lower() == 'int':
             new_value = ba(int=value,length=bit_offset_n_length[1])
         elif data_type_is.lower() == 'bool':
             new_value = 1 if value else 0
         elif data_type_is.lower() == 'time':
-            new_value = value.total_seconds()
+            new_value = value.total_seconds()*60
         else:
-            raise NotImplementedError(f'{data_type_is} date type is not supported')
-        new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]] = new_value
+            raise NotImplementedError(f'{data_type_is} data type is not supported')
         ############## methods here
+        new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]] = new_value
+        
         new_bytes_to_write = change_endianes(new_bitarray.bytes,offsets_n_stuff.GLOBAL_ENDIAN)
         self._savedata.seek(new_offset)
         self._savedata.write(new_bytes_to_write)
@@ -935,6 +964,51 @@ class RiskyRevengeSav:
         if has_health_vial1 != has_health_vial2:
             raise ValueError(f'WTF {has_health_vial1 = } {has_health_vial2 = }')
         return has_health_vial1
+
+    def get_area_relative_y_pos(self,savenumber):
+        return RiskyRevengeSav._read_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  AREA_RELATIVE_Y_POS_BITS,
+        'uint')
+
+    def set_area_relative_y_pos(self,value,savenumber):
+        RiskyRevengeSav._write_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  AREA_RELATIVE_Y_POS_BITS,
+        value,
+        'uint')
+
+    def get_area_relative_x_pos(self,savenumber):
+        return RiskyRevengeSav._read_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  AREA_RELATIVE_X_POS_BITS,
+        'uint')
+
+    def set_area_relative_x_pos(self,value,savenumber):
+        RiskyRevengeSav._write_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  AREA_RELATIVE_X_POS_BITS,
+        value,
+        'uint')
+
+    def get_last_8_bytes(self,savenumber):
+        return RiskyRevengeSav._read_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  LAST_8_BYTES_BITS,
+        'bytes')
+
+    def set_last_8_bytes(self,value,savenumber):
+        RiskyRevengeSav._write_data(self,
+        offsets_n_stuff.  MASSIVE_BLOCK_CHECKPOINT,
+        savenumber,
+        offsets_n_stuff.  LAST_8_BYTES_BITS,
+        value,
+        'bytes')
 
     def set_has_health_vial(self,value,savenumber: int):
         RiskyRevengeSav._write_data(self,
