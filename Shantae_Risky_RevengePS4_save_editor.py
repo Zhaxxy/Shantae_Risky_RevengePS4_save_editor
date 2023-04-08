@@ -7,6 +7,7 @@ if __name__ == "__main__":
 from io import BytesIO
 from bitstring import BitArray as ba
 import logging
+import struct
 
 import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
 
@@ -94,6 +95,10 @@ class RiskyRevengeSav:
             return the_raw_bits.int
         elif data_type_is.lower() == 'bool':
             return bool(the_raw_bits.uint)
+        elif data_type_is == 'float':
+            float_bytes = the_raw_bits.tobytes()
+            return struct.unpack('>f', float_bytes)[0]
+
         elif data_type_is.lower() == 'bytes':
             return change_endianes(the_raw_bits.tobytes(),endianness)
 
@@ -149,6 +154,9 @@ class RiskyRevengeSav:
         ############# methods here
         if data_type_is.lower() == 'bytes':
             new_value = ba(bytes=change_endianes(value,endianness))
+        elif data_type_is.lower() == 'float':
+            float_byets_value = struct.pack('>f', value)
+            new_value = ba(bytes=float_byets_value)
         elif data_type_is.lower() == 'uint':
             new_value = ba(uint=value,length=bit_offset_n_length[1])
         elif data_type_is.lower() == 'int':
