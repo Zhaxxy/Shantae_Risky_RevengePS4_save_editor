@@ -10,7 +10,7 @@ import logging
 
 import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 
 """
