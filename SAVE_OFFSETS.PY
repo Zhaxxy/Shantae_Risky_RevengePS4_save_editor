@@ -1,11 +1,12 @@
 GLOBAL_ENDIAN = 'little'
-SAVE_FILES_SLOTS = {1,2,3}
+SAVE_FILES_SLOTS = (1,2,3)
+SAVE_FILES_SLOTS_INGAME = ('Not a valid save slot','File A','File B','File C')
 #offsets and lengths, each block needs its block offset and length, and each data in the block needs its bit offset and length
 
 #special offsets, are not spefic to each save file
 SCREEN_MODE = 0x494,1
 SCREEN_MOD_BITS = 6,2
-SCREEN_MODE_INGAME = ['Square (4:3) with Borders','Square (4:3)','Wide (16:9)','Original']
+SCREEN_MODE_INGAME = ('Square (4:3) with Borders','Square (4:3)','Wide (16:9)','Original')
 
 MUSIC_VOLUME = 0x490,1
 MUSIC_VOLUME_BITS = 0,8
@@ -26,13 +27,13 @@ HEARTS_BITS = 3,3
 
 MAGIC_HEALTH_VIALS = 0x282,1
 MAGIC_POTIONS_COUNT_BITS = 0,4
-HEALTH_VIALS_COUNT_BITS = 3,4
+HEALTH_VIALS_COUNT_BITS = 4,4
 
 
 ITEMS_WITH_AMOUNTS1 = 0x286,2
 GOLDEN_SQUID_BABY_COUNT_BITS = 9,2
 MAGIC_SEALS_COUNT_BITS = 7,2
-MAJIC_JAMS_COUNT_BITS = 11,5
+MAGIC_JAMS_COUNT_BITS = 11,5
 
 
 
@@ -80,7 +81,7 @@ HAS_MAGIC_POTION1_BIT = 22,1
 RANDOM_ITEMS = 0x2a8,4
 HAS_MAGIC_POTION2_BIT = 3,1 #V Note these do not HAVE to be checked for it to work, and nethier does the ones in MAGIC_ITEMS, the game checks for ethier one but ingame it sets both of them to 1 so i do it too, probably has their reasons
 HAS_HEALTH_VIAL2_BIT = 4,1  #^
-HAS_MAJIC_JAM_BIT = 5,1
+HAS_MAGIC_JAM_BIT = 5,1
 
 SAVE_FILE_TIME = 0x308,4
 SAVE_FILE_TIME_BITS = 0,32

@@ -8,9 +8,12 @@ from io import BytesIO
 from bitstring import BitArray as ba
 import logging
 import struct
+import inspect
 
-import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
-
+try:
+    import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
+except ModuleNotFoundError:
+    import SAVE_OFFSETS as offsets_n_stuff
 #logging.basicConfig(level=logging.DEBUG)
 
 
@@ -25,6 +28,23 @@ each save entry (file select) stores theese blocks side by side, so when i say o
 look at the constants for more info, dont bother looking at the setter and getter functions, although some may
 some custom code, ill be sure to point that out in the constants though
 """
+
+def get_nested_keys_and_values(d, path=None):
+    """
+    Made by chatGPT!
+    """
+
+    if path is None:
+        path = []
+    if isinstance(d, dict):
+        for key, value in d.items():
+            yield from get_nested_keys_and_values(value, path + [key])
+    elif isinstance(d, list):
+        for i, value in enumerate(d):
+            yield from get_nested_keys_and_values(value, path + [i])
+    else:
+        yield path + [d]
+
 
 
 
@@ -47,6 +67,7 @@ def max_int(bits_size,*,is_uint=True):
     return 2**bits_size-1 if is_uint else (2**bits_size-1)//2
 
 
+
 def change_endianes(data,endianes):  
     if endianes.lower() == 'little':
         data = bytearray(data)
@@ -57,8 +78,129 @@ def change_endianes(data,endianes):
     else:
         raise ValueError(f'{endianes} is not a valid endian, use little or big')
 
+def unjsonify_string(json_key_string: str) -> str:
+    return json_key_string.replace('_',' ')
+
+def jsonify_string(key_string: str) -> str:
+    return key_string.replace(' ','_')
 
 class RiskyRevengeSav:
+    _current_editor_version = '0.91' # read only
+    @property
+    def current_version(self):
+        return self._current_editor_version
+
+    _current_dictionary_editor_version = '0.91' # read only
+    @property
+    def current_dictionary_version(self):
+        return self._current_dictionary_editor_version
+    
+    @classmethod
+    def from_dictionary(cls,parsed_dict):
+        if parsed_dict['current_dictionary_editor_version_doNotEdit'] != cls._current_dictionary_editor_version:
+            raise TypeError('Not a vlaldu idk temp')
+
+        save = cls(bytearray.fromhex(parsed_dict['doNotEditThis']))
+
+        for x in get_nested_keys_and_values(parsed_dict):
+            for savenumber in offsets_n_stuff.SAVE_FILES_SLOTS:
+                if x[0] != jsonify_string(offsets_n_stuff.SAVE_FILES_SLOTS_INGAME[savenumber]): continue
+                
+                if x[-3] == 'misc' and x[-2] == 'is_used1': save.set_is_used1(x[-1],savenumber)
+                if x[-4] == 'save_file_time' and x[-3] == 'is_used1': save.set_save_file_time(x[-1],savenumber)
+                if x[-3] == 'always_running' and x[-2] == 'is_used1': save.set_always_running(x[-1],savenumber)
+
+                if x[-4] == 'location' and x[-3] == 'x': save.set_area_relative_x_pos(x[-1],savenumber)
+                if x[-4] == 'location' and x[-3] == 'y': save.set_area_relative_y_pos(x[-1],savenumber)
+                if x[-4] == 'location' and x[-3] == 'checkpoint_bytes': save.set_last_8_bytes(bytes.fromhex(x[-1]),savenumber)
+
+                if x[-3] == 'gems': save.set_gems(x[-1],savenumber)
+                if x[-3] == 'current_health': save.set_current_health(x[-1],savenumber)
+                if x[-3] == 'hearts': save.set_hearts(x[-1],savenumber)
+                if x[-3] == 'current_magic': save.set_current_magic(x[-1],savenumber)
+                
+                if x[1] == 'inventory':
+                    if x[-2] == 'in_inventory':
+                        hasser = getattr(save,f'set_has_{x[-3]}')
+                        hasser(x[-1],savenumber)
+                    if x[-2] == 'count':
+                        try:
+                            hasser_count = getattr(save,f'set_{x[-3]}_count')
+                        except AttributeError:
+                            hasser_count = getattr(save,f'set_{x[-3]}s_count')
+                        hasser_count(x[-1],savenumber)
+
+            if x[0] == 'settings' and 'comment_valid_options' not in x:
+                if 'screen_mode' in x:
+                    save.screen_mode = x[-1]
+                if 'music_volume' in x:
+                    save.music_volume = x[-1]
+                if 'sound_volume' in x:
+                    save.music_volume = x[-1]
+        return save
+    def parse_to_dictionary(self):
+        methods = [attr for attr in inspect.getmembers(self) if inspect.isroutine(attr[1])]
+
+        parsed_dict = {'current_dictionary_editor_version_doNotEdit':self.current_dictionary_version,
+                       'doNotEditThis':self.export_save().hex(),
+                       }
+
+        for savenumber in offsets_n_stuff.SAVE_FILES_SLOTS:
+            save_name_ingame = jsonify_string(offsets_n_stuff.SAVE_FILES_SLOTS_INGAME[savenumber])
+            save_data_dict = {save_name_ingame:{}}
+            sa = save_data_dict[save_name_ingame]
+            sa.update({'misc':{}})
+            misc = sa['misc']
+
+            misc['is_used1'] = self.get_is_used1(savenumber)
+            misc['save_file_time'] = [self.get_save_file_time(savenumber),{'comment_max':max_int(offsets_n_stuff.SAVE_FILE_TIME_BITS[1])}]
+            misc['always_running'] = self.get_always_running(savenumber)
+
+
+            
+            sa.update({'location':{}})
+            lo = sa['location']
+
+            lo['x'] = [self.get_area_relative_x_pos(savenumber),   {'comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_X_POS_BITS[1])} ]
+            lo['y'] = [self.get_area_relative_y_pos(savenumber),   {'comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_Y_POS_BITS[1])}]
+            lo['checkpoint_bytes'] = [self.get_last_8_bytes(savenumber).hex(),{'comment_required_byte_length':'It needs to be 8 bytes long'}]
+
+            sa['gems'] = [self.get_gems(savenumber), {'comment_max':max_int(offsets_n_stuff.GEMS_BITS[1])}]
+            sa['hearts'] = [self.get_hearts(savenumber), {'comment_max':max_int(offsets_n_stuff.HEARTS_BITS[1])}]
+            sa['current_health'] = [self.get_current_health(savenumber), {'comment_max':max_int(offsets_n_stuff.CURRENT_HEALTH_BITS[1])}]
+            sa['current_magic'] = [self.get_current_magic(savenumber),   {'comment_max':max_int(offsets_n_stuff.CURRENT_MAGIC_BITS[1])}]
+
+            sa.update({'inventory':{}})
+            inv = sa['inventory']
+            for method in methods:
+                if method[0].startswith('get_'):
+                    if 'has_' in method[0]:
+                        uhhh = method[0].split('has_')[-1]
+                        has_count = False
+                        for method2 in methods:
+                            if method2[0].startswith('get_'):
+                                if 'count' in method2[0] and uhhh in method2[0]:
+                                    has_count = method2
+                        if has_count:
+                            the_constant_strname = has_count[0].replace('get_','').upper() + '_BITS'
+                            the_constant = getattr(offsets_n_stuff, the_constant_strname)
+                            
+
+                            inv.update({uhhh:{'in_inventory':method[1](savenumber),'count':has_count[1](savenumber),'comment_max_count':max_int(the_constant[1])}})
+                        else:
+                            inv.update({uhhh:{'in_inventory':method[1](savenumber)}})
+
+            parsed_dict.update(save_data_dict)        
+        
+        parsed_dict.update({'settings':{}})
+        se = parsed_dict['settings']
+
+        se['screen_mode'] = [self.screen_mode,{'comment_valid_options':offsets_n_stuff.SCREEN_MODE_INGAME}]
+        se['music_volune'] = [self.music_volume,{'comment_max':max_int(offsets_n_stuff.MUSIC_VOLUME_BITS[1])}]
+        se['sound_volume'] = [self.sound_volume,{'comment_max':max_int(offsets_n_stuff.SOUND_VOLUME_BITS[1])}]
+
+        return parsed_dict
+
     def _read_data(self,
                     offset_n_length,
                     savenumber,
@@ -168,8 +310,9 @@ class RiskyRevengeSav:
         else:
             raise NotImplementedError(f'{data_type_is} data type is not supported')
         ############## methods here
+        og = len(new_bitarray)
         new_bitarray[bit_offset_n_length[0]:bit_offset_n_length[0] + bit_offset_n_length[1]] = new_value
-        
+        assert og == len(new_bitarray)
         new_bytes_to_write = change_endianes(new_bitarray.bytes,offsets_n_stuff.GLOBAL_ENDIAN)
         self._savedata.seek(new_offset)
         self._savedata.write(new_bytes_to_write)
@@ -323,18 +466,18 @@ class RiskyRevengeSav:
         value,
         'uint')
 
-    def get_majic_jams_count(self,savenumber):
+    def get_magic_jams_count(self,savenumber):
         return RiskyRevengeSav._read_data(self,
         offsets_n_stuff. ITEMS_WITH_AMOUNTS1,
         savenumber,
-        offsets_n_stuff. MAJIC_JAMS_COUNT_BITS,
+        offsets_n_stuff. MAGIC_JAMS_COUNT_BITS,
         'uint')
 
-    def set_majic_jams_count(self,value,savenumber):
+    def set_magic_jams_count(self,value,savenumber):
         RiskyRevengeSav._write_data(self,
         offsets_n_stuff. ITEMS_WITH_AMOUNTS1,
         savenumber,
-        offsets_n_stuff. MAJIC_JAMS_COUNT_BITS,
+        offsets_n_stuff. MAGIC_JAMS_COUNT_BITS,
         value,
         'uint')
 
@@ -908,18 +1051,18 @@ class RiskyRevengeSav:
         value,
         'bool')
 
-    def get_has_majic_jam(self,savenumber):
+    def get_has_magic_jam(self,savenumber):
         return RiskyRevengeSav._read_data(self,
         offsets_n_stuff. RANDOM_ITEMS,
         savenumber,
-        offsets_n_stuff. HAS_MAJIC_JAM_BIT,
+        offsets_n_stuff. HAS_MAGIC_JAM_BIT,
         'bool')
 
-    def set_has_majic_jam(self,value,savenumber):
+    def set_has_magic_jam(self,value,savenumber):
         RiskyRevengeSav._write_data(self,
         offsets_n_stuff. RANDOM_ITEMS,
         savenumber,
-        offsets_n_stuff. HAS_MAJIC_JAM_BIT,
+        offsets_n_stuff. HAS_MAGIC_JAM_BIT,
         value,
         'bool')
 
@@ -1078,21 +1221,21 @@ class RiskyRevengeSav:
         value,
         'uint')
 
-    def _get_screen_mode(self):
-        return  RiskyRevengeSav._read_data(self,
-        offsets_n_stuff. SCREEN_MODE,
-        1,
-        offsets_n_stuff. SCREEN_MOD_BITS,
-        'uint')
+    # def _get_screen_mode(self):
+        # return  RiskyRevengeSav._read_data(self,
+        # offsets_n_stuff. SCREEN_MODE,
+        # 1,
+        # offsets_n_stuff. SCREEN_MOD_BITS,
+        # 'uint')
 
 
-    def _set_screen_mode(self,value):
-        RiskyRevengeSav._write_data(self,
-        offsets_n_stuff. SCREEN_MODE,
-        1,
-        offsets_n_stuff. SCREEN_MOD_BITS,
-        value,
-        'uint')
+    # def _set_screen_mode(self,value):
+        # RiskyRevengeSav._write_data(self,
+        # offsets_n_stuff. SCREEN_MODE,
+        # 1,
+        # offsets_n_stuff. SCREEN_MOD_BITS,
+        # value,
+        # 'uint')
 
     @property
     def screen_mode(self):
@@ -1104,14 +1247,18 @@ class RiskyRevengeSav:
         return offsets_n_stuff.SCREEN_MODE_INGAME[raw_bits]
     @screen_mode.setter
     def screen_mode(self,value):
+        screen_mode_bits = offsets_n_stuff.SCREEN_MOD_BITS
+    
+        all_indexs = [n for n in range(max_int(screen_mode_bits[1])+1)] #include the last number
+
         #maybe use chatgpt to match closest thing?
-        raw_bits = offsets_n_stuff.SCREEN_MODE_INGAME.index(value)
+        raw_bits = value if value in all_indexs else offsets_n_stuff.SCREEN_MODE_INGAME.index(value)
 
         
         RiskyRevengeSav._write_data(self,
         offsets_n_stuff. SCREEN_MODE,
         1,
-        offsets_n_stuff. SCREEN_MOD_BITS,
+        screen_mode_bits,
         raw_bits,
         'uint')
         
