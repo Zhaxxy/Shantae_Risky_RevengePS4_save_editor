@@ -11,9 +11,9 @@ import struct
 import inspect
 
 try:
-    import Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS as offsets_n_stuff
+    from Shantae_Risky_RevengePS4_save_editor.SAVE_OFFSETS import SAVE_DATA_INFO_READ_ONLY as offsets_n_stuff
 except ModuleNotFoundError:
-    import SAVE_OFFSETS as offsets_n_stuff
+    from SAVE_OFFSETS import SAVE_DATA_INFO_READ_ONLY as offsets_n_stuff
 #logging.basicConfig(level=logging.DEBUG)
 
 
@@ -46,7 +46,8 @@ def get_nested_keys_and_values(d, path=None):
         yield path + [d]
 
 
-
+def is_path_a_comment(path_as_itr):
+    return any('_comment' in json_dir for json_dir in path_as_itr if isinstance(json_dir, str))
 
 def format_ingame_time(time_as_int):
     seconds = time_as_int // 60
@@ -61,6 +62,7 @@ def time2ingame_time(formated_ingame_time,must_be_in_use=True):
 
 def check_save(save_bytes):
     return save_bytes.startswith(b'\x76\xD4\xFE\x54') and len(save_bytes) == 0x800
+
 
 
 def max_int(bits_size,*,is_uint=True):
@@ -85,6 +87,9 @@ def jsonify_string(key_string: str) -> str:
     return key_string.replace(' ','_')
 
 class RiskyRevengeSav:
+    def __eq__(self, other):
+        return self.export_save() == other.export_save()
+    
     _current_editor_version = '0.91' # read only
     @property
     def current_version(self):
@@ -103,21 +108,26 @@ class RiskyRevengeSav:
         save = cls(bytearray.fromhex(parsed_dict['doNotEditThis']))
 
         for x in get_nested_keys_and_values(parsed_dict):
+            if is_path_a_comment(x): continue
+            
             for savenumber in offsets_n_stuff.SAVE_FILES_SLOTS:
                 if x[0] != jsonify_string(offsets_n_stuff.SAVE_FILES_SLOTS_INGAME[savenumber]): continue
                 
-                if x[-3] == 'misc' and x[-2] == 'is_used1': save.set_is_used1(x[-1],savenumber)
-                if x[-4] == 'save_file_time' and x[-3] == 'is_used1': save.set_save_file_time(x[-1],savenumber)
-                if x[-3] == 'always_running' and x[-2] == 'is_used1': save.set_always_running(x[-1],savenumber)
+                if x[1] == 'misc':
+                    if x[2] == 'is_used1': save.set_is_used1(x[-1],savenumber)
+                    if x[2] == 'save_file_time': save.set_save_file_time(x[-1],savenumber)
+                    if x[2] == 'always_running': save.set_always_running(x[-1],savenumber)
+  
+                if x[1] == 'location':
+                    if x[2] == 'x': save.set_area_relative_x_pos(x[-1],savenumber)
+                    if x[2] == 'y': save.set_area_relative_y_pos(x[-1],savenumber)
+                    if x[2] == 'checkpoint_bytes': save.set_last_8_bytes(bytes.fromhex(x[-1]),savenumber)
+                
 
-                if x[-4] == 'location' and x[-3] == 'x': save.set_area_relative_x_pos(x[-1],savenumber)
-                if x[-4] == 'location' and x[-3] == 'y': save.set_area_relative_y_pos(x[-1],savenumber)
-                if x[-4] == 'location' and x[-3] == 'checkpoint_bytes': save.set_last_8_bytes(bytes.fromhex(x[-1]),savenumber)
-
-                if x[-3] == 'gems': save.set_gems(x[-1],savenumber)
-                if x[-3] == 'current_health': save.set_current_health(x[-1],savenumber)
-                if x[-3] == 'hearts': save.set_hearts(x[-1],savenumber)
-                if x[-3] == 'current_magic': save.set_current_magic(x[-1],savenumber)
+                if x[1] == 'gems': save.set_gems(x[-1],savenumber)
+                if x[1] == 'current_health': save.set_current_health(x[-1],savenumber)
+                if x[1] == 'hearts': save.set_hearts(x[-1],savenumber)
+                if x[1] == 'current_magic': save.set_current_magic(x[-1],savenumber)
                 
                 if x[1] == 'inventory':
                     if x[-2] == 'in_inventory':
@@ -130,13 +140,13 @@ class RiskyRevengeSav:
                             hasser_count = getattr(save,f'set_{x[-3]}s_count')
                         hasser_count(x[-1],savenumber)
 
-            if x[0] == 'settings' and 'comment_valid_options' not in x:
+            if x[0] == 'settings':
                 if 'screen_mode' in x:
                     save.screen_mode = x[-1]
                 if 'music_volume' in x:
                     save.music_volume = x[-1]
                 if 'sound_volume' in x:
-                    save.music_volume = x[-1]
+                    save.sound_volume = x[-1]
         return save
     def parse_to_dictionary(self):
         methods = [attr for attr in inspect.getmembers(self) if inspect.isroutine(attr[1])]
@@ -153,7 +163,7 @@ class RiskyRevengeSav:
             misc = sa['misc']
 
             misc['is_used1'] = self.get_is_used1(savenumber)
-            misc['save_file_time'] = [self.get_save_file_time(savenumber),{'comment_max':max_int(offsets_n_stuff.SAVE_FILE_TIME_BITS[1])}]
+            misc['save_file_time'] = [self.get_save_file_time(savenumber),{'_comment_max':max_int(offsets_n_stuff.SAVE_FILE_TIME_BITS[1])}]
             misc['always_running'] = self.get_always_running(savenumber)
 
 
@@ -161,14 +171,14 @@ class RiskyRevengeSav:
             sa.update({'location':{}})
             lo = sa['location']
 
-            lo['x'] = [self.get_area_relative_x_pos(savenumber),   {'comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_X_POS_BITS[1])} ]
-            lo['y'] = [self.get_area_relative_y_pos(savenumber),   {'comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_Y_POS_BITS[1])}]
-            lo['checkpoint_bytes'] = [self.get_last_8_bytes(savenumber).hex(),{'comment_required_byte_length':'It needs to be 8 bytes long'}]
+            lo['x'] = [self.get_area_relative_x_pos(savenumber),   {'_comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_X_POS_BITS[1])} ]
+            lo['y'] = [self.get_area_relative_y_pos(savenumber),   {'_comment_max':max_int(offsets_n_stuff.AREA_RELATIVE_Y_POS_BITS[1])}]
+            lo['checkpoint_bytes'] = [self.get_last_8_bytes(savenumber).hex(),{'_comment_required_byte_length':'It needs to be 8 bytes long'}]
 
-            sa['gems'] = [self.get_gems(savenumber), {'comment_max':max_int(offsets_n_stuff.GEMS_BITS[1])}]
-            sa['hearts'] = [self.get_hearts(savenumber), {'comment_max':max_int(offsets_n_stuff.HEARTS_BITS[1])}]
-            sa['current_health'] = [self.get_current_health(savenumber), {'comment_max':max_int(offsets_n_stuff.CURRENT_HEALTH_BITS[1])}]
-            sa['current_magic'] = [self.get_current_magic(savenumber),   {'comment_max':max_int(offsets_n_stuff.CURRENT_MAGIC_BITS[1])}]
+            sa['gems'] = [self.get_gems(savenumber), {'_comment_max':max_int(offsets_n_stuff.GEMS_BITS[1])}]
+            sa['hearts'] = [self.get_hearts(savenumber), {'_comment_max':max_int(offsets_n_stuff.HEARTS_BITS[1])}]
+            sa['current_health'] = [self.get_current_health(savenumber), {'_comment_max':max_int(offsets_n_stuff.CURRENT_HEALTH_BITS[1])}]
+            sa['current_magic'] = [self.get_current_magic(savenumber),   {'_comment_max':max_int(offsets_n_stuff.CURRENT_MAGIC_BITS[1])}]
 
             sa.update({'inventory':{}})
             inv = sa['inventory']
@@ -186,7 +196,7 @@ class RiskyRevengeSav:
                             the_constant = getattr(offsets_n_stuff, the_constant_strname)
                             
 
-                            inv.update({uhhh:{'in_inventory':method[1](savenumber),'count':has_count[1](savenumber),'comment_max_count':max_int(the_constant[1])}})
+                            inv.update({uhhh:{'in_inventory':method[1](savenumber),'count':has_count[1](savenumber),'_comment_max_count':max_int(the_constant[1])}})
                         else:
                             inv.update({uhhh:{'in_inventory':method[1](savenumber)}})
 
@@ -195,9 +205,9 @@ class RiskyRevengeSav:
         parsed_dict.update({'settings':{}})
         se = parsed_dict['settings']
 
-        se['screen_mode'] = [self.screen_mode,{'comment_valid_options':offsets_n_stuff.SCREEN_MODE_INGAME}]
-        se['music_volune'] = [self.music_volume,{'comment_max':max_int(offsets_n_stuff.MUSIC_VOLUME_BITS[1])}]
-        se['sound_volume'] = [self.sound_volume,{'comment_max':max_int(offsets_n_stuff.SOUND_VOLUME_BITS[1])}]
+        se['screen_mode'] = [self.screen_mode,{'_comment_valid_options':offsets_n_stuff.SCREEN_MODE_INGAME}]
+        se['music_volune'] = [self.music_volume,{'_comment_max':max_int(offsets_n_stuff.MUSIC_VOLUME_BITS[1])}]
+        se['sound_volume'] = [self.sound_volume,{'_comment_max':max_int(offsets_n_stuff.SOUND_VOLUME_BITS[1])}]
 
         return parsed_dict
 
@@ -284,6 +294,9 @@ class RiskyRevengeSav:
         
         
         new_offset = (offset_n_length[0] - offset_n_length[1]) + (offset_n_length[1]*savenumber)
+        if type(value) == int: printvalue = hex(value)
+        else: printvalue = value
+        logging.debug(f'offset is {hex(new_offset)} old offset is {hex(offset_n_length[0])} value is {printvalue}')
         self._savedata.seek(new_offset)
         new_data = self._savedata.read(offset_n_length[1])
         self._savedata.seek(0)
@@ -1287,7 +1300,7 @@ class RiskyRevengeSav:
         offsets_n_stuff. SOUND_VOLUME_BITS,
         'uint')
 
-    @music_volume.setter
+    @sound_volume.setter
     def sound_volume(self,value):
         RiskyRevengeSav._write_data(self,
         offsets_n_stuff. SOUND_VOLUME,
