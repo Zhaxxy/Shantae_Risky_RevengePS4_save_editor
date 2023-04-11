@@ -60,10 +60,31 @@ def time2ingame_time(formated_ingame_time,must_be_in_use=True):
     total_minutes = (int(hours) * 60) + int(minutes)
     return min((total_minutes * 60)*60,1) if must_be_in_use else (total_minutes * 60)*60
 
+def make_zeros_save():
+    return b'\x76\xD4\xFE\x54'.ljust(0x800,b'\x00')
+
 def check_save(save_bytes):
     return save_bytes.startswith(b'\x76\xD4\xFE\x54') and len(save_bytes) == 0x800
 
+def check_dictionary_save(save_dictionary,check_values_too=True):
+    placeholder_save_bytes = make_zeros_save()
+    placeholder_save = RiskyRevengeSav(placeholder_save_bytes)
+    template_dict = placeholder_save.parse_to_dictionary()
 
+    for template_key, entered_key in zip(get_nested_keys_and_values(template_dict), get_nested_keys_and_values(save_dictionary)):
+        if is_path_a_comment(template_key):
+            if template_key != entered_key:
+                return False
+        if template_key[:-1] != entered_key[:-1]:
+            return False
+    if check_values_too:
+        try:
+            RiskyRevengeSav.from_dictionary(save_dictionary)
+        except:
+            return False
+    
+    
+    return True
 
 def max_int(bits_size,*,is_uint=True):
     return 2**bits_size-1 if is_uint else (2**bits_size-1)//2
@@ -205,7 +226,7 @@ class RiskyRevengeSav:
         parsed_dict.update({'settings':{}})
         se = parsed_dict['settings']
 
-        se['screen_mode'] = [self.screen_mode,{'_comment_valid_options':offsets_n_stuff.SCREEN_MODE_INGAME}]
+        se['screen_mode'] = [self.screen_mode,{'_comment_valid_options':list(offsets_n_stuff.SCREEN_MODE_INGAME)}]
         se['music_volune'] = [self.music_volume,{'_comment_max':max_int(offsets_n_stuff.MUSIC_VOLUME_BITS[1])}]
         se['sound_volume'] = [self.sound_volume,{'_comment_max':max_int(offsets_n_stuff.SOUND_VOLUME_BITS[1])}]
 
