@@ -22,6 +22,16 @@ save_dict = save.parse_to_dictionary()
 """
 Do not edit any values that has a key that starts with '_comment'! They are comments just to tell you the limitaions of said value, usually max number
 """
+
+# Do stuff with the dictionary (do not add or remove anything, just edit values)
+save_dict['settings']['screen_mode'][0] = 'Wide (16:9)'
+
+import json
+
+with open('savedata.json','w') as f:
+  json.dump(save_dict, f)
+
+do_things_with_json_file(json_file_path='savedata.json')
 ```
 
 
