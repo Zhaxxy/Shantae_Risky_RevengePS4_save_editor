@@ -37,6 +37,11 @@ do_things_with_json_file(json_file_path='savedata.json')
 ```python
 with open('savedata.json','r') as f:
   new_save_dict = json.load(f)
+
+new_save = sav.from_dictionary(new_save_dict)
+
+with open('savedata.sav','wb') as f:
+  f.write(new_save.export_save())
 ```
 
 # Class Usage #
