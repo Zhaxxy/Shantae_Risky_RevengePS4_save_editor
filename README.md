@@ -16,6 +16,12 @@ from Shantae_Risky_RevengePS4_save_editor import RiskyRevengeSav as sav
 
 with open('savedata.sav','rb') as f:
   save = sav(f.read())
+
+# Serialise the save into a dictionary 
+save_dict = save.parse_to_dictionary()
+"""
+Do not edit any values that has a key that starts with '_comment'! They are comments just to tell you the limitaions of said value, usually max number
+"""
 ```
 
 
