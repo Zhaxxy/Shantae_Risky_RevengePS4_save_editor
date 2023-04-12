@@ -33,7 +33,11 @@ with open('savedata.json','w') as f:
 
 do_things_with_json_file(json_file_path='savedata.json')
 ```
-
+# JSON or dictionary back to savedata.sav #
+```python
+with open('savedata.json','r') as f:
+  new_save_dict = json.load(f)
+```
 
 # Class Usage #
 ## Initialise savedata.sav file for editing ##
