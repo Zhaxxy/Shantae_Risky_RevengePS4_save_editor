@@ -46,6 +46,71 @@ def get_nested_keys_and_values(d, path=None):
         yield path + [d]
 
 
+def ensure_valid_value(value, constant, data_type_is,*,fix_the_value=False):
+    """
+    Raise a ValueError if the value is invalid
+    param fix_the_value: if true try to fix the value if its invalid, if it cant then just raise ValueError
+    param data_type_is: the data_type_is it should be, if its not here, just return the value
+    param constant: a tuple in the format (offset,length), ignore the 'offset', the 'length' is in bits
+    
+
+    """
+    
+    if data_type_is not in ('int','uint','bytes'):
+        return value
+    
+    if data_type_is == 'uint':
+        max_value = 2**(constant[1])-1
+        min_value = 0
+    
+        if not isinstance(value,int):
+            raise ValueError(f'{value} is not a {data_type_is}')
+    
+        if value > max_value:
+            if fix_the_value:
+                logging.info(f'{value} is bigger than {max_value}, so returning {max_value}')
+                return max_value
+                
+            raise ValueError(f'{value} is bigger than {max_value}! must be between {min_value} and {max_value} for {data_type_is} constant = {constant}')
+
+        if value < min_value:
+            if fix_the_value:
+                logging.info(f'{value} is smaller than {min_value}, so returning {min_value}')
+                return min_value
+            
+            raise ValueError(f'{value} is smaller than {min_value}! must be between {min_value} and {max_value} for {data_type_is} constant = {constant}')
+    
+    if data_type_is == 'int':
+        max_value = 2**(constant[1]-1)-1
+        min_value = 2**(constant[1]-1) * -1
+        
+        if not isinstance(value,int):
+            raise ValueError(f'{value} is not a {data_type_is}')
+        
+        if value > max_value:
+            if fix_the_value:
+                logging.info(f'{value} is bigger than {max_value}, so returning {max_value}')
+                return max_value
+
+            raise ValueError(f'{value} is bigger than {max_value}! must be between {min_value} and {max_value} for {data_type_is} constant = {constant}')
+        
+        if value < min_value:
+            if fix_the_value:
+                logging.info(f'{value} is smaller than {min_value}, so returning {min_value}')
+                return max_value
+            
+            raise ValueError(f'{value} is negative! must be between {min_value} and {max_value} for {data_type_is} constant = {constant}')
+
+    if data_type_is == 'bytes':
+        required_bytes_length = constant[1]//8
+        entered_bytes_length = len(value)
+        
+        if entered_bytes_length != required_bytes_length:
+            raise ValueError(f'{value.hex()} is {entered_bytes_length} bytes, it must be {required_bytes_length} bytes')
+
+    return value
+
+
 def is_path_a_comment(path_as_itr):
     return any('_comment' in json_dir for json_dir in path_as_itr if isinstance(json_dir, str))
 
@@ -299,19 +364,7 @@ class RiskyRevengeSav:
         
 
         
-        if data_type_is == 'bytes':
-            required_bytes_length = bit_offset_n_length[1]//8
-            entered_bytes_length = len(value)
-            
-            if entered_bytes_length != entered_bytes_length:
-                raise ValueError(f'{value.hex()} is {entered_bytes_length} bytes, it must be {required_bytes_length} bytes')
-        
-        
-        if data_type_is == 'uint':
-            if max_int(bit_offset_n_length[1]) < value:
-                raise ValueError(f'Value is bigger then {max_int(bit_offset_n_length[1])}, wont work')
-            if value < 0:
-                raise ValueError('uint values cannot be negative')
+        value = ensure_valid_value(value,bit_offset_n_length,data_type_is)
         
         
         new_offset = (offset_n_length[0] - offset_n_length[1]) + (offset_n_length[1]*savenumber)
