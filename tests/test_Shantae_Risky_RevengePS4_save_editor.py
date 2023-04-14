@@ -116,9 +116,9 @@ class TestRiskyRevengeSav(unittest.TestCase):
                 value = getter[1](savenumber)
                 if isinstance(value,int) and not isinstance(value, bool):
                     with self.assertRaises(ValueError):
-                        setter[1](savenumber,HUGE_NUMBER)
+                        setter[1](HUGE_NUMBER,savenumber)
                     with self.assertRaises(ValueError):
-                        setter[1](savenumber,-1)
+                        setter[1](-1,savenumber)
 
     def test_random_save(self):
         with open(os.path.join(TESTS_DIR,'random_save','savedata.sav'),'rb') as f:
