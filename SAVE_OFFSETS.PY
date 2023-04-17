@@ -1,7 +1,7 @@
 class SAVE_DATA_INFO_READ_ONLY:
     GLOBAL_ENDIAN = 'little'
     SAVE_FILES_SLOTS = (1,2,3)
-    SAVE_FILES_SLOTS_INGAME = ('Not a valid save slot','File A','File B','File C')
+    SAVE_FILES_SLOTS_INGAME = ('Not a valid save slot (raise an error if accessed maybe)','File A','File B','File C')
     #offsets and lengths, each block needs its block offset and length, and each data in the block needs its bit offset and length
 
     #special offsets, are not spefic to each save file
@@ -10,10 +10,10 @@ class SAVE_DATA_INFO_READ_ONLY:
     SCREEN_MODE_INGAME = ('Square (4:3) with Borders','Square (4:3)','Wide (16:9)','Original')
 
     MUSIC_VOLUME = 0x490,1
-    MUSIC_VOLUME_BITS = 0,8
+    MUSIC_VOLUME_BITS = 0, MUSIC_VOLUME[1]*8
 
     SOUND_VOLUME = 0x491,1
-    SOUND_VOLUME_BITS = 0,8
+    SOUND_VOLUME_BITS = 0, SOUND_VOLUME[1]*8
 
 
 
@@ -85,15 +85,15 @@ class SAVE_DATA_INFO_READ_ONLY:
     HAS_MAGIC_JAM_BIT = 5,1
 
     SAVE_FILE_TIME = 0x308,4
-    SAVE_FILE_TIME_BITS = 0,32
+    SAVE_FILE_TIME_BITS = 0, SAVE_FILE_TIME[1]*8
 
     MASSIVE_BLOCK_CHECKPOINT = 0x328,16
-    AREA_RELATIVE_Y_POS_BITS = 0,24
-    AREA_RELATIVE_X_POS_BITS = 32,24
-    LAST_8_BYTES_BITS = 64,8*8
+    AREA_RELATIVE_Y_POS_BITS = 0, 3 * 8
+    AREA_RELATIVE_X_POS_BITS = 32, 3 * 8
+    LAST_8_BYTES_BITS = 64, 8*8
 
     CURRENT_HEALTH = 0x358,1
-    CURRENT_HEALTH_BITS = 0,8
+    CURRENT_HEALTH_BITS = 0, CURRENT_HEALTH[1]*8
 
     CURRENT_MAGIC = 0x35B,1
-    CURRENT_MAGIC_BITS = 0,8
+    CURRENT_MAGIC_BITS = 0, CURRENT_MAGIC[1]*8
