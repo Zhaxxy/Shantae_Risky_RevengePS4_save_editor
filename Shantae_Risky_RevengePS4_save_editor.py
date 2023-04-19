@@ -413,6 +413,9 @@ class RiskyRevengeSav:
     def export_save(self):
         return self._savedata.getvalue()
 
+    def check_if_used(self,savenumber):
+        return self.get_save_file_time(savenumber) < 1 or not self.get_is_used1(savenumber)
+    
     def __str__(self):
         if self.get_save_file_time(1) < 1 or not self.get_is_used1(1):
             time1 = 'NEW'
