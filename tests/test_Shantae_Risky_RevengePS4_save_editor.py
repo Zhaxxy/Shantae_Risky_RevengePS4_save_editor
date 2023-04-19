@@ -148,6 +148,7 @@ class TestRiskyRevengeSav(unittest.TestCase):
         self.assertEqual(save,save2_tested_all_setters)
         
         self.assertEqual(save.get_gems(1), 534)
+        self.assertEqual(save.get_gems(2), 496)
         self.assertEqual(save.get_magic_potions_count(1), 6)
         self.assertEqual(save.get_health_vials_count(1), 8)
         self.assertTrue(save.get_has_storm_puff(1))
